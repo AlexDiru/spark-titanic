@@ -1,21 +1,17 @@
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.sql.SparkSession
 
 object SparkApplication extends App {
 
-  //Create a SparkContext to initialize Spark
-  val conf = new SparkConf()
-  conf.setMaster("local")
-  conf.setAppName("Word Count")
-  val sc = new SparkContext(conf)
+  val spark = SparkSession
+    .builder()
+    .master("local")
+    .appName("Spark Titanic")
+    .getOrCreate()
 
-  // Load the text into a Spark RDD, which is a distributed representation of each line of text
-  val textFile = sc.textFile(getClass.getResource("shakespeare.txt").getFile)
-
-  //word count
-  val counts = textFile.flatMap(line => line.split(" "))
-    .map(word => (word, 1))
-    .reduceByKey(_ + _)
-
-  counts.foreach(println)
-  System.out.println("Total words: " + counts.count());
+  val df = spark.read.
+    format("csv").
+    option("header", "true").
+    load(getClass.getResource("train.csv").getPath)
+  
+  println(df)
 }
